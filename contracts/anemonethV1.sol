@@ -44,7 +44,7 @@ contract AnemonethV1 is ERC20CappedUpgradeable, OwnableUpgradeable {
 
     function register(string memory _username) external payable {
         require(msg.value >= entryFee);
-        uint256 _amount = msg.value * 10000000000000000000000; // Establish exchange rate
+        uint256 _amount = msg.value * 10 ether; // Establish exchange rate
         transferFrom(address(this), msg.sender, _amount);
 
         User storage newUser = addressToUser[msg.sender];
