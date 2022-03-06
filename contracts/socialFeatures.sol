@@ -20,12 +20,15 @@ contract SocialFeatures is AnemonethV1 {
         uint256 timestamp;
         uint16 likeRecived;
         uint16 dislikeRecived;
+        address[] likeRecivedFrom; // <== we want to show who liked the post but keep anonymous who disliked it?
         Comments[] comments;
     }
 
     struct Comments {
         address from;
         uint256 commentDate;
+        uint256 likeRecived;
+        uint256 dislikeRecived;
         string commentMessage;
         string commentImageURI;
     }
@@ -54,6 +57,7 @@ contract SocialFeatures is AnemonethV1 {
                 block.timestamp,
                 0,
                 0,
+                new address[](0),
                 new Comments[](0)
             )
         );
@@ -89,4 +93,56 @@ contract SocialFeatures is AnemonethV1 {
     function setUserImageURI(string memory _userImgURI) external OnlyUsers {
         addressToUser[msg.sender].userImageURI = _userImgURI;
     }
+
+    function addLikeToPost(uint256 _postId, address _postOwner)
+        external
+        payable
+    {
+        transferFrom(msg.sender, _postOwner, 10 ether); // added price to like and dislike to discourage bots or malicious users that want to use other's self owned
+        posts[_postId].likeRecived++; // profile to add likes on their posts      ++ a premium for the best post/owner
+    }
+
+    function addDislikeToPost(uint256 _postId) external payable {
+        _burn(msg.sender, 10 ether); // added burning
+        posts[_postId].dislikeRecived++;
+    }
+
+    function addComment(
+        uint256 _postId,
+        address _postOwner,
+        string memory _commentText,
+        string memory _commentImgURI
+    ) external payable {
+        transferFrom(msg.sender, _postOwner, 10);
+        posts[_postId].comments.push(
+            Comments(
+                msg.sender,
+                block.timestamp,
+                0,
+                0,
+                _commentText,
+                _commentImgURI
+            )
+        );
+    }
+
+    function addLikeToPostComment(
+        uint256 _postId,
+        uint256 _commentId,
+        address _commentOwner
+    ) external payable {
+        transferFrom(msg.sender, _commentOwner, 5 ether);
+        posts[_postId].comments[_commentId].likeRecived++;
+    }
+
+    function addDislikeToPostComment(uint256 _postId, uint256 _commentId)
+        external
+        payable
+    {
+        _burn(msg.sender, 5 ether);
+        posts[_postId].comments[_commentId].dislikeRecived++;
+    }
+
+    // in Posts like/dislike and in comments like/dislike feature we should add probably a feature to remove the dislike/like if it was added previously.
+    // but at the same time we should think about that the user already payed a fee to add this dislike/like
 }

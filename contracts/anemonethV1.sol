@@ -13,7 +13,9 @@ contract AnemonethV1 is ERC20CappedUpgradeable, OwnableUpgradeable {
         string username;
         string userImageURI; // added user image url (Max)
         uint256 joinDate;
-        bool isUser;
+        /* Post[] userPosts; */ // <== do we want to keep track only of user posts, so that in user's page is easier to find them?
+        //     or we want to use ids from main posts array?
+        //     we could also create a mapping outside User'struct like => mapping(address => mapping(id => Post)) addressToPost
     }
 
     User[] users; // <= don't know if we still need this after mapping. But if we remove it we should find a different solution for
@@ -48,7 +50,6 @@ contract AnemonethV1 is ERC20CappedUpgradeable, OwnableUpgradeable {
         transferFrom(address(this), msg.sender, _amount);
 
         User storage newUser = addressToUser[msg.sender];
-        newUser.isUser = true;
         newUser.username = _username;
         newUser.addr = msg.sender;
         newUser.joinDate = block.timestamp;
@@ -108,7 +109,7 @@ contract AnemonethV1 is ERC20CappedUpgradeable, OwnableUpgradeable {
     }
 
     modifier OnlyUsers() {
-        require(addressToUser[msg.sender].isUser);
+        require(addressToUser[msg.sender].addr == msg.sender);
         _;
     }
 
